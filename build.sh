@@ -1,0 +1,1 @@
+clang++ -Wall -std=c++17 main.cpp src/glad.c -lglfw -ldl -o build/main && ./build/main

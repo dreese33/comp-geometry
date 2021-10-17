@@ -4,6 +4,7 @@
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
+void drawShapeFromTriangles(int VAO, int bufferObject, int shaderProgram, bool element);
 
 // define shaders
 const char *vertexShaderSource = "#version 330 core\n"
@@ -238,16 +239,10 @@ int main(void)
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
-    glUseProgram(shaderProgram);
-    glBindVertexArray(VAO);
     // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     // glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0); // 6 vertices in total
-    glDrawArrays(GL_TRIANGLES, 0, 3);
-
-    glUseProgram(shaderProgram1);
-    glBindVertexArray(VAO1);
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+    drawShapeFromTriangles(VAO, 0, shaderProgram, false);
+    drawShapeFromTriangles(VAO1, 0, shaderProgram1, false);
 
     glfwSwapBuffers(window);
     glfwPollEvents();
@@ -271,4 +266,16 @@ void processInput(GLFWwindow *window)
     glfwSetWindowShouldClose(window, true);
   else if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
     glfwSetWindowShouldClose(window, true);
+}
+
+// draws a shape given a VAO, a VBO/EBO, and a shader program
+void drawShapeFromTriangles(int VAO, int bufferObject, int shaderProgram, bool element) {
+  glUseProgram(shaderProgram);
+  glBindVertexArray(VAO);
+  if (element) {
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferObject);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0); // 6 vertices specified for now
+  } else {
+    glDrawArrays(GL_TRIANGLES, 0, 3); // 3 vertices specified, multiple draws for our purposes here
+  }
 }

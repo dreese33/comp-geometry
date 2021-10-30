@@ -31,6 +31,5 @@
 *.out
 *.app
 
-# Builds
-build/*
-!build/README.md
+# Generated Files
+.DS_STORE

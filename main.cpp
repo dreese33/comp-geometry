@@ -14,22 +14,14 @@ void drawShapeFromTriangles(int VAO, int bufferObject, int shaderProgram, bool e
 static std::string read_shader_file(const char *shader_file);
 
 // define shaders
-const std::string shaderCode = read_shader_file("./shaders/basic_colors/vertex_shader.vert");
-const GLchar* vertexShaderSource = (const GLchar *) shaderCode.c_str();
+const std::string vertexShaderCode = read_shader_file("./shaders/basic/vertex_shader.vert");
+const GLchar* vertexShaderSource = (const GLchar *) vertexShaderCode.c_str();
 
-const char *fragmentShaderSource = "#version 330 core\n"
-  "out vec4 FragColor;\n"
-  "void main()\n"
-  "{\n"
-  "  FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f); // RGBA \n"
-  "}\0";
+const std::string fragmentShaderCode = read_shader_file("./shaders/basic/fragment_shader.frag");
+const GLchar* fragmentShaderSource = (const GLchar *) fragmentShaderCode.c_str();
 
-const char *fragmentShaderSource1 = "#version 330 core\n"
-  "out vec4 FragColor;\n"
-  "void main()\n"
-  "{\n"
-  "  FragColor = vec4(1.0f, 1.0f, 0.0f, 1.0f); // RGBA yellow \n"
-  "}\0";
+const std::string fragmentShaderCode1 = read_shader_file("./shaders/basic/fragment_shader_other.frag");
+const GLchar* fragmentShaderSource1 = (const GLchar *) fragmentShaderCode.c_str();
 
 // program entry point
 int main(void)
@@ -304,6 +296,8 @@ static std::string read_shader_file (const char *shader_file)
   sstr << file.rdbuf();
   sstr << "\0";
   file.close();
+
+  // std::cout << sstr.str();
 
   std::string shaderCode = sstr.str().c_str();
   return shaderCode;

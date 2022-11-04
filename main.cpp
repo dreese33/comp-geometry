@@ -2,6 +2,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
 void drawShapeFromTriangles(int VAO, int bufferObject, int shaderProgram, bool element);
@@ -229,7 +230,8 @@ int main(void)
   glDeleteShader(fragmentShader1);
 
   // optional configuration for OpenGL context for wireframe mode
-  // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); // default is GL_FILL - shows rectangle
+  glPointSize(10);
+  glPolygonMode(GL_FRONT_AND_BACK, GL_POINT); // default is GL_FILL - shows rectangle
 
   while (!glfwWindowShouldClose(window))
   {
@@ -271,6 +273,8 @@ void processInput(GLFWwindow *window)
 // draws a shape given a VAO, a VBO/EBO, and a shader program
 void drawShapeFromTriangles(int VAO, int bufferObject, int shaderProgram, bool element) {
   glUseProgram(shaderProgram);
+  std::cout << "test" << std::endl;
+  std::cout << VAO << std::endl;
   glBindVertexArray(VAO);
   if (element) {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferObject);

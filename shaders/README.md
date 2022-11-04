@@ -1,0 +1,2 @@
+# Shaders
+This folder will contain the main functionality of this repository - a collection of shader's I have built for various algorithms/computational geometries. Other folders may be created in the future for other computational geometry generation.

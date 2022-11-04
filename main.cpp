@@ -1,4 +1,9 @@
 #include <iostream>
+#include <fstream>
+#include <limits>
+#include <sstream>
+
+#include <stddef.h>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
@@ -6,14 +11,11 @@
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
 void drawShapeFromTriangles(int VAO, int bufferObject, int shaderProgram, bool element);
+static std::string read_shader_file(const char *shader_file);
 
 // define shaders
-const char *vertexShaderSource = "#version 330 core\n"
-  "layout (location = 0) in vec3 aPos;\n"
-  "void main()\n"
-  "{\n"
-  "  gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-  "}\0";
+const std::string shaderCode = read_shader_file("./shaders/basic_colors/vertex_shader.vert");
+const GLchar* vertexShaderSource = (const GLchar *) shaderCode.c_str();
 
 const char *fragmentShaderSource = "#version 330 core\n"
   "out vec4 FragColor;\n"
@@ -273,8 +275,6 @@ void processInput(GLFWwindow *window)
 // draws a shape given a VAO, a VBO/EBO, and a shader program
 void drawShapeFromTriangles(int VAO, int bufferObject, int shaderProgram, bool element) {
   glUseProgram(shaderProgram);
-  std::cout << "test" << std::endl;
-  std::cout << VAO << std::endl;
   glBindVertexArray(VAO);
   if (element) {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferObject);
@@ -282,4 +282,29 @@ void drawShapeFromTriangles(int VAO, int bufferObject, int shaderProgram, bool e
   } else {
     glDrawArrays(GL_TRIANGLES, 0, 3); // 3 vertices specified, multiple draws for our purposes here
   }
+}
+
+static std::string read_shader_file (const char *shader_file)
+{
+  // no feedback is provided for stream errors / exceptions.
+
+  std::ifstream file (shader_file);
+  if (!file) return std::string ();
+
+  file.ignore(std::numeric_limits<std::streamsize>::max());
+  auto size = file.gcount();
+
+  if (size > 0x10000) // 64KiB sanity check for shaders:
+      return std::string ();
+
+  file.clear();
+  file.seekg(0, std::ios_base::beg);
+
+  std::stringstream sstr;
+  sstr << file.rdbuf();
+  sstr << "\0";
+  file.close();
+
+  std::string shaderCode = sstr.str().c_str();
+  return shaderCode;
 }

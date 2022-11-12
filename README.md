@@ -1,5 +1,5 @@
 # Computational Geometry Experimentation
-This repository will be dedicated to learning C++ and computational geometry algorithms, and their applications.
+This repository will be dedicated to learning computational geometry algorithms and their applications through low level graphics API's, such as OpenGL.
 
 ## To run:
 Run the following command:

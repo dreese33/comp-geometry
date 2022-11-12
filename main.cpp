@@ -11,6 +11,7 @@
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
 void drawShapeFromTriangles(int VAO, int bufferObject, int shaderProgram, bool element);
+GLFWwindow* createMainWindow();
 static std::string read_shader_file(const char *shader_file);
 
 // define shaders
@@ -26,21 +27,8 @@ const GLchar* fragmentShaderSource1 = (const GLchar *) fragmentShaderCode.c_str(
 // program entry point
 int main(void)
 {
-  glfwInit();
-
-  // v3.3
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-
-// macOS specific config
-#ifdef __APPLE__
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-#endif
-
-  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-  // create glfw window
-  GLFWwindow *window = glfwCreateWindow(800, 600, "LearnOpenGL", NULL, NULL);
+  // Render main window
+  GLFWwindow* window = createMainWindow();
   if (window == NULL)
   {
     std::cout << "Failed to create GLFW window" << std::endl;
@@ -51,14 +39,13 @@ int main(void)
   // execute on current thread
   glfwMakeContextCurrent(window);
 
+  // verify GLAD loader
   if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
   {
     std::cout << "Failed to initialize GLAD" << std::endl;
     return -1;
   }
 
-  // rendering viewport dimensions, can be smaller than window dimensions
-  // x, y, width, height
   glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
   /*****************************************************************/
@@ -247,6 +234,31 @@ int main(void)
   glfwTerminate();
 
   return 0;
+}
+
+/**
+ * @brief Configure OpenGL versions and platform specific information for rendering a window
+ * Main window rendered for graphics generation and testing
+ *
+ * @returns GLFWwindow object
+ */
+GLFWwindow* createMainWindow() {
+  glfwInit();
+
+  // v3.3
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+
+// macOS specific config
+#ifdef __APPLE__
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+#endif
+
+  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+  // create glfw window
+  GLFWwindow *window = glfwCreateWindow(800, 600, "Graphics Sim", NULL, NULL);
+  return window;
 }
 
 // resize viewport on callback

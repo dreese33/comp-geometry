@@ -11,18 +11,25 @@
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
 void drawShapeFromTriangles(int VAO, int bufferObject, int shaderProgram, bool element);
+
+// refactor methods
 GLFWwindow* createMainWindow();
+unsigned int createShaderProgram(unsigned int vertexShader, unsigned int fragmentShader);
+void createShader(GLchar* shaderSource, unsigned int shader);
+void mainLoop(GLFWwindow* window, unsigned int VAO, unsigned int VAO1, unsigned int shaderProgram, unsigned int shaderProgram1);
+
+// shader file parser
 static std::string read_shader_file(const char *shader_file);
 
 // define shaders
 const std::string vertexShaderCode = read_shader_file("./shaders/basic/vertex_shader.vert");
-const GLchar* vertexShaderSource = (const GLchar *) vertexShaderCode.c_str();
+GLchar* vertexShaderSource = (GLchar *) vertexShaderCode.c_str();
 
 const std::string fragmentShaderCode = read_shader_file("./shaders/basic/fragment_shader.frag");
-const GLchar* fragmentShaderSource = (const GLchar *) fragmentShaderCode.c_str();
+GLchar* fragmentShaderSource = (GLchar *) fragmentShaderCode.c_str();
 
 const std::string fragmentShaderCode1 = read_shader_file("./shaders/basic/fragment_shader_other.frag");
-const GLchar* fragmentShaderSource1 = (const GLchar *) fragmentShaderCode.c_str();
+GLchar* fragmentShaderSource1 = (GLchar *) fragmentShaderCode.c_str();
 
 // program entry point
 int main(void)
@@ -51,12 +58,6 @@ int main(void)
   /*****************************************************************/
   /* SHAPE DEFINITION                                              */
   /*****************************************************************/
-  // 2D triangle in 3D space
-  // float vertices[] = {
-  //   -0.5f, -0.5f, 0.0f,
-  //   0.5f, -0.5f, 0.0f,
-  //   0.0f, 0.5f, 0.0f,
-  // };
 
   float vertices[] = {
     0.5f, 0.5f, 0.0f,
@@ -70,40 +71,26 @@ int main(void)
     -0.5f, 0.5f, 0.0f,
     -0.5f, 1.5f, 0.0f,
   };
-  // unsigned int indices[] = {
-  //   0, 1, 3,
-  //   1, 2, 3,
-  // };
 
   /*****************************************************************/
   /* SPECIFY HOW OPENGL SHOULD INTERPRET THE VERTEX DATA           */
   /*****************************************************************/
 
-  // VBO - vertex buffer object
-  // stores large number of vertices in GPU memory
+  // Vertex Buffer Object
   unsigned int VBO;
   glGenBuffers(1, &VBO);
 
   unsigned int VBO1;
   glGenBuffers(1, &VBO1);
 
-  // WE MUST BIND VERTEX ARRAY OBJECT (VAO) IN ORDER FOR OPENGL TO COMPILE AND RUN PROPERLY
-  // This saves us significant space, and keeps settings bound to the VAO buffer without re-initialization
+  // Vertex Array Object
   unsigned int VAO;
   glGenVertexArrays(1, &VAO);
-
-  // EBO - element buffer object
-  // unsigned int EBO;
-  // glGenBuffers(1, &EBO);
 
   // bind VAO and VBO to the vertex buffer
   glBindVertexArray(VAO);
   glBindBuffer(GL_ARRAY_BUFFER, VBO);
   glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-  // element buffer object bindings
-  // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-  // glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
   // define stride, offset, etc for vertex rendering
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
@@ -117,46 +104,67 @@ int main(void)
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
   glEnableVertexAttribArray(0);
 
-  /*****************************************************************/
-  /* CREATE VERTEX SHADER                                          */
-  /*****************************************************************/
-  unsigned int vertexShader;
-  vertexShader = glCreateShader(GL_VERTEX_SHADER);
+  // create vertex shader
+  unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
+  createShader(vertexShaderSource, vertexShader);
 
-  glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-  glCompileShader(vertexShader);
+  // create fragment shader
+  unsigned int fragmentShader= glCreateShader(GL_FRAGMENT_SHADER);
+  createShader(fragmentShaderSource, fragmentShader);
+
+  // create shader program
+  unsigned int shaderProgram = createShaderProgram(vertexShader, fragmentShader);
+
+  // define second shader program
+  unsigned int fragmentShader1 = glCreateShader(GL_FRAGMENT_SHADER);
+  createShader(fragmentShaderSource1, fragmentShader1);
+
+  unsigned int shaderProgram1 = createShaderProgram(vertexShader, fragmentShader1);
+
+  // optional configuration for OpenGL context for wireframe mode
+  glPointSize(10);
+  glPolygonMode(GL_FRONT_AND_BACK, GL_POINT); // default is GL_FILL - shows rectangle
+
+  // cleanup and delete shaders
+  glDeleteShader(vertexShader);
+  glDeleteShader(fragmentShader);
+  glDeleteShader(fragmentShader1);
+
+  mainLoop(window, VAO, VAO1, shaderProgram, shaderProgram1);
+  glfwTerminate();
+
+  return 0;
+}
+
+/**
+ * @brief Create a Shader object
+ *
+ * @param shaderSource GLSL code for shader to be rendered
+ * @param shader OpenGL shader created with macro type specified
+ */
+void createShader(GLchar* shaderSource, unsigned int shader) {
+  glShaderSource(shader, 1, &shaderSource, NULL);
+  glCompileShader(shader);
 
   // check for shader compilation errors:
-  int  vertexSuccess;
+  int  shaderSuccess;
   char vertexInfoLog[512];
-  glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &vertexSuccess);
-  if (!vertexSuccess)
+  glGetShaderiv(shader, GL_COMPILE_STATUS, &shaderSuccess);
+  if (!shaderSuccess)
   {
-    glGetShaderInfoLog(vertexShader, 512, NULL, vertexInfoLog);
-    std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << vertexInfoLog << std::endl;
+    glGetShaderInfoLog(shader, 512, NULL, vertexInfoLog);
+    std::cout << "ERROR::SHADER::COMPILATION_FAILED\n" << vertexInfoLog << std::endl;
   }
+}
 
-  /*****************************************************************/
-  /* CREATE FRAGMENT SHADER                                        */
-  /*****************************************************************/
-  unsigned int fragmentShader;
-  fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-
-  glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-  glCompileShader(fragmentShader);
-
-  // check compilation errors for fragment shader
-  int fragmentSuccess;
-  char fragmentInfoLog[512];
-  glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &fragmentSuccess);
-  if (!fragmentSuccess) {
-    glGetShaderInfoLog(fragmentShader, 512, NULL, fragmentInfoLog);
-    std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << fragmentInfoLog << std::endl;
-  }
-
-  /*****************************************************************/
-  /* CREATE SHADER PROGRAM                                         */
-  /*****************************************************************/
+/**
+ * @brief Create a Shader Program object
+ *
+ * @param vertexShader Vertex shader associated w/ object
+ * @param fragmentShader Fragment shader associated w/ object
+ * @return unsigned int
+ */
+unsigned int createShaderProgram(unsigned int vertexShader, unsigned int fragmentShader) {
   unsigned int shaderProgram;
   shaderProgram = glCreateProgram();
 
@@ -172,48 +180,15 @@ int main(void)
     std::cout << "ERROR::SHADER_PROGRAM::COMPILATION_FAILED\n" << shaderProgramInfoLog << std::endl;
   }
 
-  // once program is linked, we no longer need the shader objects!!
-  // glDeleteShader(vertexShader);
-  glDeleteShader(fragmentShader);
+  return shaderProgram;
+}
 
-  // define second shader program
-  unsigned int fragmentShader1;
-  fragmentShader1 = glCreateShader(GL_FRAGMENT_SHADER);
-
-  glShaderSource(fragmentShader1, 1, &fragmentShaderSource1, NULL);
-  glCompileShader(fragmentShader1);
-
-  // check compilation errors for fragment shader
-  int fragmentSuccess1;
-  char fragmentInfoLog1[512];
-  glGetShaderiv(fragmentShader1, GL_COMPILE_STATUS, &fragmentSuccess1);
-  if (!fragmentSuccess) {
-    glGetShaderInfoLog(fragmentShader1, 512, NULL, fragmentInfoLog1);
-    std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << fragmentInfoLog1 << std::endl;
-  }
-
-  unsigned int shaderProgram1;
-  shaderProgram1 = glCreateProgram();
-
-  glAttachShader(shaderProgram1, vertexShader);
-  glAttachShader(shaderProgram1, fragmentShader1);
-  glLinkProgram(shaderProgram1);
-
-  int shaderProgramSuccess1;
-  char shaderProgramInfoLog1[512];
-  glGetProgramiv(shaderProgram1, GL_LINK_STATUS, &shaderProgramSuccess1);
-  if (!shaderProgramSuccess1) {
-    glGetProgramInfoLog(shaderProgram1, 512, NULL, shaderProgramInfoLog1);
-    std::cout << "ERROR::SHADER_PROGRAM::COMPILATION_FAILED\n" << shaderProgramInfoLog1 << std::endl;
-  }
-
-  glDeleteShader(vertexShader);
-  glDeleteShader(fragmentShader1);
-
-  // optional configuration for OpenGL context for wireframe mode
-  glPointSize(10);
-  glPolygonMode(GL_FRONT_AND_BACK, GL_POINT); // default is GL_FILL - shows rectangle
-
+/**
+ * @brief Runs the main loop for the graphics simulator
+ *
+ * @param window GLFWwindow currently rendering the graphics
+ */
+void mainLoop(GLFWwindow* window, unsigned int VAO, unsigned int VAO1, unsigned int shaderProgram, unsigned int shaderProgram1) {
   while (!glfwWindowShouldClose(window))
   {
     processInput(window);
@@ -230,10 +205,6 @@ int main(void)
     glfwSwapBuffers(window);
     glfwPollEvents();
   }
-
-  glfwTerminate();
-
-  return 0;
 }
 
 /**

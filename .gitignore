@@ -33,3 +33,7 @@
 
 # Generated Files
 .DS_STORE
+
+# Ignore binaries
+build/*
+!build/README.md

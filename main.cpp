@@ -10,13 +10,13 @@
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
-void drawShapeFromTriangles(int VAO, int bufferObject, int shaderProgram, bool element);
+void drawPoints(int VAO, int shaderProgram, int n);
 
 // refactor methods
 GLFWwindow* createMainWindow();
 unsigned int createShaderProgram(unsigned int vertexShader, unsigned int fragmentShader);
 void createShader(GLchar* shaderSource, unsigned int shader);
-void mainLoop(GLFWwindow* window, unsigned int VAO, unsigned int VAO1, unsigned int shaderProgram, unsigned int shaderProgram1);
+void mainLoop(GLFWwindow* window, unsigned int VAO, unsigned int shaderProgram, int n);
 
 // shader file parser
 static std::string read_shader_file(const char *shader_file);
@@ -59,17 +59,13 @@ int main(void)
   /* SHAPE DEFINITION                                              */
   /*****************************************************************/
 
+  // number of vertices
+  int n = 4;
   float vertices[] = {
     0.5f, 0.5f, 0.0f,
     0.5f, -0.5f, 0.0f,
     -0.5f, -0.5f, 0.0f,
-    // -0.5f, 0.5f, 0.0f,
-  };
-
-  float vertices1[] = {
-    0.5f, 1.5f, 0.0f,
     -0.5f, 0.5f, 0.0f,
-    -0.5f, 1.5f, 0.0f,
   };
 
   /*****************************************************************/
@@ -79,9 +75,6 @@ int main(void)
   // Vertex Buffer Object
   unsigned int VBO;
   glGenBuffers(1, &VBO);
-
-  unsigned int VBO1;
-  glGenBuffers(1, &VBO1);
 
   // Vertex Array Object
   unsigned int VAO;
@@ -96,14 +89,6 @@ int main(void)
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
   glEnableVertexAttribArray(0);
 
-  unsigned int VAO1;
-  glGenVertexArrays(1, &VAO1);
-  glBindVertexArray(VAO1);
-  glBindBuffer(GL_ARRAY_BUFFER, VBO1);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices1), vertices1, GL_STATIC_DRAW);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-  glEnableVertexAttribArray(0);
-
   // create vertex shader
   unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
   createShader(vertexShaderSource, vertexShader);
@@ -115,12 +100,6 @@ int main(void)
   // create shader program
   unsigned int shaderProgram = createShaderProgram(vertexShader, fragmentShader);
 
-  // define second shader program
-  unsigned int fragmentShader1 = glCreateShader(GL_FRAGMENT_SHADER);
-  createShader(fragmentShaderSource1, fragmentShader1);
-
-  unsigned int shaderProgram1 = createShaderProgram(vertexShader, fragmentShader1);
-
   // optional configuration for OpenGL context for wireframe mode
   glPointSize(10);
   glPolygonMode(GL_FRONT_AND_BACK, GL_POINT); // default is GL_FILL - shows rectangle
@@ -128,9 +107,8 @@ int main(void)
   // cleanup and delete shaders
   glDeleteShader(vertexShader);
   glDeleteShader(fragmentShader);
-  glDeleteShader(fragmentShader1);
 
-  mainLoop(window, VAO, VAO1, shaderProgram, shaderProgram1);
+  mainLoop(window, VAO, shaderProgram, n);
   glfwTerminate();
 
   return 0;
@@ -158,7 +136,7 @@ void createShader(GLchar* shaderSource, unsigned int shader) {
 }
 
 /**
- * @brief Create a Shader Program object
+ * @brief Create a Shader Program object containing both a vertex and a fragment shader
  *
  * @param vertexShader Vertex shader associated w/ object
  * @param fragmentShader Fragment shader associated w/ object
@@ -188,7 +166,7 @@ unsigned int createShaderProgram(unsigned int vertexShader, unsigned int fragmen
  *
  * @param window GLFWwindow currently rendering the graphics
  */
-void mainLoop(GLFWwindow* window, unsigned int VAO, unsigned int VAO1, unsigned int shaderProgram, unsigned int shaderProgram1) {
+void mainLoop(GLFWwindow* window, unsigned int VAO, unsigned int shaderProgram, int n) {
   while (!glfwWindowShouldClose(window))
   {
     processInput(window);
@@ -197,10 +175,7 @@ void mainLoop(GLFWwindow* window, unsigned int VAO, unsigned int VAO1, unsigned 
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    // glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0); // 6 vertices in total
-    drawShapeFromTriangles(VAO, 0, shaderProgram, false);
-    drawShapeFromTriangles(VAO1, 0, shaderProgram1, false);
+    drawPoints(VAO, shaderProgram, n);
 
     glfwSwapBuffers(window);
     glfwPollEvents();
@@ -247,16 +222,17 @@ void processInput(GLFWwindow *window)
     glfwSetWindowShouldClose(window, true);
 }
 
-// draws a shape given a VAO, a VBO/EBO, and a shader program
-void drawShapeFromTriangles(int VAO, int bufferObject, int shaderProgram, bool element) {
+/**
+ * @brief Draws an array of points to the provided canvas, to be called in the programs main loop
+ *
+ * @param VAO Vertex Array Object
+ * @param shaderProgram Corresponding shader program (typically comprised of fragment/vertex shader)
+ * @param n Number of vertices
+ */
+void drawPoints(int VAO, int shaderProgram, int n) {
   glUseProgram(shaderProgram);
   glBindVertexArray(VAO);
-  if (element) {
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferObject);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0); // 6 vertices specified for now
-  } else {
-    glDrawArrays(GL_TRIANGLES, 0, 3); // 3 vertices specified, multiple draws for our purposes here
-  }
+  glDrawArrays(GL_POINTS, 0, 4);
 }
 
 static std::string read_shader_file (const char *shader_file)

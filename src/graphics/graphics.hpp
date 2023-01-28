@@ -8,6 +8,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#include "../vectors.hpp"
 
 namespace Graphics {
   class Shaders {
@@ -71,6 +72,42 @@ namespace Graphics {
           glGetShaderInfoLog(shader, 512, NULL, vertexInfoLog);
           std::cout << "ERROR::SHADER::COMPILATION_FAILED\n" << vertexInfoLog << std::endl;
         }
+      }
+
+      /**
+       * @brief Draws an array of points to the provided canvas, to be called in the programs main loop
+       *
+       * @param shaderProgram Takes into account both a vertex and fragment shader
+       * @param vertices Vertices to draw
+       * @param n Number of vertices
+       */
+      static void drawPoints(int shaderProgram, Vector2D *vertices, int n) {
+        // Vertex Buffer Object
+        unsigned int VBO;
+        glGenBuffers(1, &VBO);
+
+        // Vertex Array Object
+        unsigned int VAO;
+        glGenVertexArrays(1, &VAO);
+
+        // bind VAO and VBO to the vertex buffer
+        glBindVertexArray(VAO);
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices) * sizeof(Vector2D), vertices, GL_STATIC_DRAW);
+
+        // define stride, offset, etc for vertex rendering
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(0);
+
+        // optional configuration for OpenGL context for wireframe mode
+        glPointSize(10);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_POINT); // default is GL_FILL - shows rectangle
+        glUseProgram(shaderProgram);
+        glBindVertexArray(VAO);
+
+        // n = 4?
+        glDrawArrays(GL_POINTS, 0, n);
       }
   };
 }

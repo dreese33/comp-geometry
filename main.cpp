@@ -1,15 +1,16 @@
 #include <stddef.h>
-#include "src/graphics/graphics.hpp"
+#include "src/2D/shapes.hpp"
+
+using namespace Shapes;
 using namespace Graphics;
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void processInput(GLFWwindow *window);
-void drawPoints(int VAO, int shaderProgram, int n);
+// void processInput(GLFWwindow *window);
 int run();
 
 // refactor methods
 GLFWwindow* createMainWindow();
-void mainLoop(GLFWwindow* window, unsigned int VAO, unsigned int shaderProgram, int n);
+void mainLoop(GLFWwindow* window);
 
 // define shaders
 const std::string vertexShaderCode = GraphicsUtilities::read_shader_file("./src/shaders/basic/vertex_shader.vert");
@@ -27,6 +28,10 @@ int main(void)
   return run();
 }
 
+/**
+ * @brief Runs the main program, serves as the simulator's
+ * entry point
+ */
 int run() {
   // Render main window
   GLFWwindow* window = createMainWindow();
@@ -49,60 +54,7 @@ int run() {
 
   glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
-  /*****************************************************************/
-  /* SHAPE DEFINITION                                              */
-  /*****************************************************************/
-
-  // number of vertices
-  int n = 4;
-  float vertices[] = {
-    0.5f, 0.5f, 0.0f,
-    0.5f, -0.5f, 0.0f,
-    -0.5f, -0.5f, 0.0f,
-    -0.5f, 0.5f, 0.0f,
-  };
-
-  /*****************************************************************/
-  /* SPECIFY HOW OPENGL SHOULD INTERPRET THE VERTEX DATA           */
-  /*****************************************************************/
-
-  // Vertex Buffer Object
-  unsigned int VBO;
-  glGenBuffers(1, &VBO);
-
-  // Vertex Array Object
-  unsigned int VAO;
-  glGenVertexArrays(1, &VAO);
-
-  // bind VAO and VBO to the vertex buffer
-  glBindVertexArray(VAO);
-  glBindBuffer(GL_ARRAY_BUFFER, VBO);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-  // define stride, offset, etc for vertex rendering
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-  glEnableVertexAttribArray(0);
-
-  // create vertex shader
-  unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
-  GraphicsUtilities::createShader(vertexShaderSource, vertexShader);
-
-  // create fragment shader
-  unsigned int fragmentShader= glCreateShader(GL_FRAGMENT_SHADER);
-  GraphicsUtilities::createShader(fragmentShaderSource, fragmentShader);
-
-  // create shader program
-  Shaders shaderProgram = Shaders(vertexShader, fragmentShader);
-
-  // optional configuration for OpenGL context for wireframe mode
-  glPointSize(10);
-  glPolygonMode(GL_FRONT_AND_BACK, GL_POINT); // default is GL_FILL - shows rectangle
-
-  // cleanup and delete shaders
-  glDeleteShader(vertexShader);
-  glDeleteShader(fragmentShader);
-
-  mainLoop(window, VAO, shaderProgram.getShaderProgram(), n);
+  mainLoop(window);
   glfwTerminate();
 
   return 0;
@@ -113,16 +65,42 @@ int run() {
  *
  * @param window GLFWwindow currently rendering the graphics
  */
-void mainLoop(GLFWwindow* window, unsigned int VAO, unsigned int shaderProgram, int n) {
+void mainLoop(GLFWwindow* window) {
   while (!glfwWindowShouldClose(window))
   {
-    processInput(window);
+    // processInput(window);
 
-    // prevents crazy flickering
+    // prevents crazy flickering (TODO - research color/depth buffer bits)
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    drawPoints(VAO, shaderProgram, n);
+    // create vertex shader
+    unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
+    GraphicsUtilities::createShader(vertexShaderSource, vertexShader);
+
+    // create fragment shader
+    unsigned int fragmentShader= glCreateShader(GL_FRAGMENT_SHADER);
+    GraphicsUtilities::createShader(fragmentShaderSource, fragmentShader);
+
+    // create shader program
+    Shaders shaderProgram = Shaders(vertexShader, fragmentShader);
+
+    // cleanup and delete shaders
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragmentShader);
+
+    Polygon *polygon = (Polygon*) ShapeFactory::constructShape(POLYGON, VERTEX_SHAPE);
+    Vector2D center = { 0.0f, 0.0f };
+    polygon->setNumberOfSides(10);
+    polygon->setCenterPt(center);
+    polygon->setRadius(0.5f);
+    polygon->calculateVertices();
+
+    GraphicsUtilities::drawPoints(
+      shaderProgram.getShaderProgram(),
+      polygon->getVertices(),
+      polygon->getNumberOfSides()
+    );
 
     glfwSwapBuffers(window);
     glfwPollEvents();
@@ -161,23 +139,10 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height)
 }
 
 // see if escape is pressed
-void processInput(GLFWwindow *window)
-{
-  if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-    glfwSetWindowShouldClose(window, true);
-  else if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
-    glfwSetWindowShouldClose(window, true);
-}
-
-/**
- * @brief Draws an array of points to the provided canvas, to be called in the programs main loop
- *
- * @param VAO Vertex Array Object
- * @param shaderProgram Corresponding shader program (typically comprised of fragment/vertex shader)
- * @param n Number of vertices
- */
-void drawPoints(int VAO, int shaderProgram, int n) {
-  glUseProgram(shaderProgram);
-  glBindVertexArray(VAO);
-  glDrawArrays(GL_POINTS, 0, 4);
-}
+// void processInput(GLFWwindow *window)
+// {
+//   if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+//     glfwSetWindowShouldClose(window, true);
+//   else if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+//     glfwSetWindowShouldClose(window, true);
+// }

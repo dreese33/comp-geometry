@@ -14,6 +14,7 @@ add_executable(comp_geometry
   ./main.cpp
   ./src/glad.c
   ./src/graphics/graphics.cpp
+  ./src/2D/shapes.cpp
 )
 
 # Libraries

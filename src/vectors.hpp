@@ -1,0 +1,1 @@
+typedef struct Vector2D { float vector[2]; } Vector2D;

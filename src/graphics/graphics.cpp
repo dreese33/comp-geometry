@@ -28,10 +28,7 @@ namespace Graphics {
     this->shaderProgram = shaderProgram;
   }
 
-  unsigned int Shaders::getShaderProgram() {
-    return this->shaderProgram;
-  }
-
+  unsigned int Shaders::getShaderProgram() { return this->shaderProgram; }
   void Shaders::setShaderProgram(unsigned int shaderProgram) {
     this->shaderProgram = shaderProgram;
   }

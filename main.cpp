@@ -91,7 +91,7 @@ void mainLoop(GLFWwindow* window) {
 
     Polygon *polygon = (Polygon*) ShapeFactory::constructShape(POLYGON, VERTEX_SHAPE);
     Vector2D center = { 0.0f, 0.0f };
-    polygon->setNumberOfSides(10);
+    polygon->setNumberOfSides(4);
     polygon->setCenterPt(center);
     polygon->setRadius(0.5f);
     polygon->calculateVertices();

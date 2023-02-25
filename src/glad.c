@@ -7,7 +7,7 @@
     APIs: gl=4.1
     Profile: core
     Extensions:
-        
+
     Loader: True
     Local files: False
     Omit khrplatform: False

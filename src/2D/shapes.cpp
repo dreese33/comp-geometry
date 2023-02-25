@@ -1,9 +1,12 @@
 #include <iostream>
 #include "shapes.hpp"
+#include "../math/geometry.hpp"
+
+using namespace Geometry;
 
 namespace Shapes {
    /**
-   * @brief Calculate the vertex's coordinates based on the start point, which begins at the bottom of the circle
+   * @brief Calculate the polygons vertex coordinates based on the start point, which begins at the bottom of the circle
    * bounding the polygon to be drawn. In this configuration, we will draw a non-rotated polygon, with a line along
    * the x-axis at the bottom.
    *
@@ -13,11 +16,15 @@ namespace Shapes {
   Vector2D *Polygon::calculatePolygonVertex(unsigned int vertex) {
     Vector2D *polygonVertex = new Vector2D();
     polygonVertex->vector[0] = this->centerPt.vector[0]
-      + this->radius*cos(270 + this->omega/2 + vertex*this->omega);
+      + this->radius * cos(
+        Angles::degreeToRadian(vertex * this->omega)
+      );
     polygonVertex->vector[1] = this->centerPt.vector[1]
-      + this->radius*sin(270 + this->omega/2 + vertex*this->omega);
-    std::cout << this->omega << " " << vertex << " " << polygonVertex->vector[0] << " " << polygonVertex->vector[1] << std::endl;
-    std::cout << this->radius*cos(270+this->omega/2 + vertex*this->omega) << std::endl;
+      + this->radius * sin(
+        Angles::degreeToRadian(vertex * this->omega)
+      );
+    std::cout << polygonVertex->vector[0] << std::endl;
+    std::cout << polygonVertex->vector[1] << std::endl;
     return polygonVertex;
   }
 
@@ -26,9 +33,6 @@ namespace Shapes {
    */
   void Polygon::calculateVertices() {
     this->vertices = new Vector2D[this->numberOfSides];
-    // this->vertices[1].vector[0] = 0.5f;
-    // this->vertices[1].vector[1] = 0.5f;
-
     for (unsigned int i = 0; i < this->numberOfSides; i++) {
       this->vertices[i] = *calculatePolygonVertex(i);
     }

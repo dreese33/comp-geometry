@@ -5,7 +5,6 @@ using namespace Shapes;
 using namespace Graphics;
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-// void processInput(GLFWwindow *window);
 int run();
 
 // refactor methods
@@ -68,8 +67,6 @@ int run() {
 void mainLoop(GLFWwindow* window) {
   while (!glfwWindowShouldClose(window))
   {
-    // processInput(window);
-
     // prevents crazy flickering (TODO - research color/depth buffer bits)
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -137,12 +134,3 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height)
 {
   glViewport(0, 0, width, height);
 }
-
-// see if escape is pressed
-// void processInput(GLFWwindow *window)
-// {
-//   if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-//     glfwSetWindowShouldClose(window, true);
-//   else if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
-//     glfwSetWindowShouldClose(window, true);
-// }

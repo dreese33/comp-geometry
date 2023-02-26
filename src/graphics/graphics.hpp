@@ -6,7 +6,7 @@
 #include <sstream>
 #include <limits>
 #include <glad/glad.h>
-#include <GLFW/glfw3.h>
+#include <SDL2/SDL.h>
 
 #include "../vectors.hpp"
 

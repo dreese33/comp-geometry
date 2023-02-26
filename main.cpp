@@ -10,8 +10,9 @@ using namespace Graphics;
 int run();
 
 // refactor methods
-SDL_Window* createMainWindow();
+SDL_Window* createMainWindow(const char* windowTitle);
 void mainLoop(SDL_Window* window);
+int sdlDie(const char* exitMessage);
 
 // define shaders
 const std::string vertexShaderCode = GraphicsUtilities::read_shader_file("./src/shaders/basic/vertex_shader.vert");
@@ -36,20 +37,32 @@ int run() {
     printf("Failed to initialize SDL: %s\n", SDL_GetError());
     return -1;
   }
+  // SDL_GL_LoadLibrary(NULL); // default OpenGL
 
-  SDL_Window* window = createMainWindow();
+  // Request OpenGL version to 4.1 before rendering our window
+  // SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+  // Also request a depth buffer
+  SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+  SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+
+  SDL_Window* window = createMainWindow("Algo Sim");
   if (window == NULL)
   {
-    std::cout << "Failed to create SDL window" << std::endl;
-    SDL_Quit();
-    return -1;
+    return sdlDie("Failed to create SDL window");
+  }
+
+  SDL_GLContext mainContext = SDL_GL_CreateContext(window);
+  if (mainContext == NULL) {
+    return sdlDie("Failed to create OpenGL Context");
   }
 
   // verify GLAD loader
   if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress))
   {
-    std::cout << "Failed to initialize GLAD" << std::endl;
-    return -1;
+    return sdlDie("Failed to initialize GLAD loader");
   }
 
   mainLoop(window);
@@ -116,13 +129,20 @@ void mainLoop(SDL_Window* window) {
  *
  * @returns SDL_Window
  */
-SDL_Window* createMainWindow() {
-  SDL_Window* window = NULL;
-  SDL_Surface* screenSurface = NULL;
-  screenSurface = SDL_GetWindowSurface( window );
-  //Fill the surface white
-  SDL_FillRect( screenSurface, NULL, SDL_MapRGB(screenSurface->format, 0xFF, 0xFF, 0xFF ));
-  //Update the surface
-  SDL_UpdateWindowSurface( window );
+SDL_Window* createMainWindow(const char* windowTitle) {
+  // Create window
+  SDL_Window* window = SDL_CreateWindow(windowTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_OPENGL);
   return window;
+}
+
+/**
+ * @brief Kill SDL
+ *
+ * @param exitMessage Message to log upon exiting program
+ * @return int Exit status
+ */
+int sdlDie(const char* exitMessage) {
+  printf("%s : %s\n", exitMessage, SDL_GetError());
+  SDL_Quit();
+  return -1;
 }

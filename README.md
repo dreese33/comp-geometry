@@ -3,7 +3,7 @@ This repository will be dedicated to learning computational geometry algorithms 
 
 ## To run:
 Run the following command:
-`source build.sh`
+`sh scripts/build.sh`
 Note: this has primarily been tested on MacOS. Linux should be supported; however, it has not been tested extensively. Windows is not currently supported. This repo is WIP, future support for other operating systems will come with future iterations.
 
 ## Dependencies:

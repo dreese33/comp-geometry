@@ -7,7 +7,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 # add directories
-include_directories(./src/graphics)
+include_directories(./src/graphics
+  ./src/math
+  ./include
+  ${SDL2_INCLUDE_DIR}
+)
 
 # add executable for source file
 add_executable(comp_geometry
@@ -18,5 +22,6 @@ add_executable(comp_geometry
 )
 
 # Libraries
-find_package(glfw3 3.3 REQUIRED)
-target_link_libraries(comp_geometry glfw)
+find_package(SDL2 REQUIRED)
+find_package(SDL2_image REQUIRED)
+target_link_libraries(comp_geometry ${SDL2_LIBRARIES})

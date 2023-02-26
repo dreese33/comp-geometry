@@ -1,1 +1,1 @@
-rm -rf CMakeFiles
+rm -rf build/CMakeFiles build/comp_geometry build/cmake_install.cmake build/CMakeCache.txt build/Makefile build/.cmake build/compile_commands.json

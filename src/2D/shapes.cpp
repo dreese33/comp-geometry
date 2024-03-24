@@ -1,4 +1,3 @@
-#include <iostream>
 #include "shapes.hpp"
 #include "../math/geometry.hpp"
 
@@ -13,8 +12,9 @@ namespace Shapes {
    * @param vertex Starting at the bottom right, vertex to calculate coordinates for (counterclockwise)
    * @return Vector vertex coordinates
    */
-  Vector2D *Polygon::calculatePolygonVertex(unsigned int vertex) {
-    Vector2D *polygonVertex = new Vector2D();
+  shared_ptr<Vector2D> Polygon::calculatePolygonVertex(unsigned int vertex) {
+    // Vector2D *polygonVertex = new Vector2D();
+    shared_ptr<Vector2D> polygonVertex(new Vector2D());
     polygonVertex->vector[0] = this->centerPt.vector[0]
       + this->radius * cos(
         Angles::degreeToRadian(vertex * this->omega)
@@ -23,8 +23,8 @@ namespace Shapes {
       + this->radius * sin(
         Angles::degreeToRadian(vertex * this->omega)
       );
-    std::cout << polygonVertex->vector[0] << std::endl;
-    std::cout << polygonVertex->vector[1] << std::endl;
+    // cout << polygonVertex->vector[0] << endl;
+    // cout << polygonVertex->vector[1] << endl;
     return polygonVertex;
   }
 
@@ -32,9 +32,8 @@ namespace Shapes {
    * @brief Calculates vertex positions for polygon with n sides
    */
   void Polygon::calculateVertices() {
-    this->vertices = new Vector2D[this->numberOfSides];
     for (unsigned int i = 0; i < this->numberOfSides; i++) {
-      this->vertices[i] = *calculatePolygonVertex(i);
+      this->vertices.push_back(calculatePolygonVertex(i));
     }
   }
 
@@ -48,7 +47,6 @@ namespace Shapes {
   float Shape2D::getSideLen() { return this->sideLen; }
   Vector2D Shape2D::getCenterPt() { return this->centerPt; }
   Vector2D Shape2D::getStartPt() { return this->startPt; }
-  Vector2D *Shape2D::getVertices() { return this->vertices; }
 
   // setters
   void Shape2D::setRadius(float radius) { this->radius = radius; }
@@ -57,6 +55,7 @@ namespace Shapes {
       this->numberOfSides = numberOfSides;
       this->omega = 360.0f / this->numberOfSides;
     }
+    cout << "omega: " << this->omega << endl;
   }
   void Shape2D::setCenterPt(Vector2D &centerPt) { this->centerPt = centerPt; }
   void Shape2D::setStartPt(Vector2D &startPt) { this->startPt = startPt; }

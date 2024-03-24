@@ -21,6 +21,15 @@ namespace Geometry {
       static float degreeToRadian(float angle) {
         return (M_PI / 180.0f) * angle;
       }
+
+      /**
+       * @brief Standard math function, convert radians to degrees
+       * @param angle Angle in radians
+       * @return float Angle in degrees
+       */
+      static float radianToDegree(float angle) {
+        return angle * (180.0f / M_PI);
+      }
   };
 }
 

@@ -7,8 +7,11 @@
 #include <limits>
 #include <glad/glad.h>
 #include <SDL2/SDL.h>
+#include <vector>
 
 #include "../vectors.hpp"
+
+using namespace std;
 
 namespace Graphics {
   class Shaders {
@@ -81,23 +84,25 @@ namespace Graphics {
        * @param vertices Vertices to draw
        * @param n Number of vertices
        */
-      static void drawPoints(int shaderProgram, Vector2D *vertices, int n) {
+      static void drawPoints(int shaderProgram, vector<shared_ptr<Vector2D>> vertices, int n) {
         // Vertex Buffer Object
-        unsigned int VBO;
+        GLuint VBO;
         glGenBuffers(1, &VBO);
-
-        // Vertex Array Object
-        unsigned int VAO;
-        glGenVertexArrays(1, &VAO);
-
-        // bind VAO and VBO to the vertex buffer
-        glBindVertexArray(VAO);
         glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
-        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices) * sizeof(Vector2D), vertices, GL_STATIC_DRAW);
+        for (int i = 0; i < n; i++) {
+          cout << "test " << vertices[i]->vector[0] << " " << vertices[i]->vector[1] << endl;
+        }
+        glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vector2D), &vertices[0]->vector, GL_STATIC_DRAW);
+
+        // Vertex Array Object
+        GLuint VAO;
+        glGenVertexArrays(1, &VAO);
+        glBindVertexArray(VAO);
 
         // define stride, offset, etc for vertex rendering
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+        // we are enabling this for 2D at the moment
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vector2D), (void*)0);
         glEnableVertexAttribArray(0);
 
         // optional configuration for OpenGL context for wireframe mode
@@ -106,7 +111,6 @@ namespace Graphics {
         glUseProgram(shaderProgram);
         glBindVertexArray(VAO);
 
-        // n = 4?
         glDrawArrays(GL_POINTS, 0, n);
       }
   };

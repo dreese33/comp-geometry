@@ -54,3 +54,6 @@ _deps
 # ignore doxygen files
 html/
 latex/
+
+# vscode specific files
+.vscode/

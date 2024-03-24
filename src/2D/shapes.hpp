@@ -2,7 +2,10 @@
 #define SHAPES_HPP
 
 #include <cmath>
+#include <iostream>
 #include "../graphics/graphics.hpp"
+
+using namespace std;
 
 namespace Shapes {
   enum ShapeType {
@@ -15,13 +18,15 @@ namespace Shapes {
 
   class Shape2D {
     public:
+      // variables
+      vector<shared_ptr<Vector2D>> vertices;
+
       // getters
       float getRadius();
       unsigned int getNumberOfSides();
       float getSideLen();
       Vector2D getCenterPt();
       Vector2D getStartPt();
-      Vector2D *getVertices();
 
       // setters
       void setRadius(float radius);
@@ -39,7 +44,6 @@ namespace Shapes {
 
       Vector2D centerPt;
       Vector2D startPt;
-      Vector2D *vertices;
 
       // other functions
       virtual void calculateVertices() {};
@@ -47,7 +51,7 @@ namespace Shapes {
 
   class Polygon: public Shape2D {
     public:
-      Vector2D *calculatePolygonVertex(unsigned int vertex);
+      shared_ptr<Vector2D> calculatePolygonVertex(unsigned int vertex);
       virtual void calculateVertices();
       Polygon(ShapeDrawingStyle drawingStyle);
     private:

@@ -2,7 +2,7 @@
 #include "src/2D/shapes.hpp"
 
 #define SCREEN_WIDTH 800
-#define SCREEN_HEIGHT 600
+#define SCREEN_HEIGHT 800
 
 using namespace Shapes;
 using namespace Graphics;
@@ -35,12 +35,10 @@ int run() {
   // initialize SDL
   if (SDL_Init(SDL_INIT_VIDEO) < 0) {
     printf("Failed to initialize SDL: %s\n", SDL_GetError());
-    return -1;
+    return 1;
   }
-  // SDL_GL_LoadLibrary(NULL); // default OpenGL
 
   // Request OpenGL version to 4.1 before rendering our window
-  // SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
@@ -54,8 +52,8 @@ int run() {
     return sdlDie("Failed to create SDL window");
   }
 
-  SDL_GLContext mainContext = SDL_GL_CreateContext(window);
-  if (mainContext == NULL) {
+  SDL_GLContext context = SDL_GL_CreateContext(window);
+  if (context == NULL) {
     return sdlDie("Failed to create OpenGL Context");
   }
 
@@ -108,14 +106,14 @@ void mainLoop(SDL_Window* window) {
 
         Polygon *polygon = (Polygon*) ShapeFactory::constructShape(POLYGON, VERTEX_SHAPE);
         Vector2D center = { 0.0f, 0.0f };
-        polygon->setNumberOfSides(4);
+        polygon->setNumberOfSides(6);
         polygon->setCenterPt(center);
         polygon->setRadius(0.5f);
         polygon->calculateVertices();
 
         GraphicsUtilities::drawPoints(
           shaderProgram.getShaderProgram(),
-          polygon->getVertices(),
+          polygon->vertices,
           polygon->getNumberOfSides()
         );
       }
@@ -131,7 +129,14 @@ void mainLoop(SDL_Window* window) {
  */
 SDL_Window* createMainWindow(const char* windowTitle) {
   // Create window
-  SDL_Window* window = SDL_CreateWindow(windowTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_OPENGL);
+  SDL_Window* window = SDL_CreateWindow(
+    windowTitle,
+    SDL_WINDOWPOS_UNDEFINED,
+    SDL_WINDOWPOS_UNDEFINED,
+    SCREEN_WIDTH,
+    SCREEN_HEIGHT,
+    SDL_WINDOW_OPENGL
+  );
   return window;
 }
 
@@ -144,5 +149,5 @@ SDL_Window* createMainWindow(const char* windowTitle) {
 int sdlDie(const char* exitMessage) {
   printf("%s : %s\n", exitMessage, SDL_GetError());
   SDL_Quit();
-  return -1;
+  return 1;
 }
